@@ -1,5 +1,7 @@
 # Zettelkasten Source Viewer
 
+**vibe coded with Claude Sonnet 4.5, use on your own risk**
+
 A minimal, fast, and secure PHP-based document viewer for managing hundreds or thousands of Markdown and HTML source documents. Perfect for Zettelkasten systems that need a simple way to view and link to reference materials.
 
 ## Features
