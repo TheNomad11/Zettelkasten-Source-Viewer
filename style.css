@@ -576,10 +576,109 @@ body {
     
     .sidebar {
         width: 100%;
-        height: 50vh;
+        height: auto;
+        max-height: 40vh;
         border-right: none;
-        border-bottom: 1px solid var(--border);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        border-bottom: none;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        position: relative;
+    }
+    
+    .sidebar::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent 0%, var(--border) 20%, var(--border) 80%, transparent 100%);
+    }
+    
+    /* Compact header on mobile */
+    .sidebar-header {
+        padding: 12px 16px;
+    }
+    
+    .sidebar-header h1 {
+        font-size: 1.125rem;
+        margin-bottom: 2px;
+    }
+    
+    .doc-count {
+        font-size: 11px;
+    }
+    
+    /* Compact search on mobile */
+    .search-container {
+        padding: 12px 16px;
+    }
+    
+    .search-input {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .search-info {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    .search-option {
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    
+    /* Hide footer on mobile to save space */
+    .sidebar-footer {
+        display: none;
+    }
+    
+    /* Maximize file list space */
+    .doc-list {
+        max-height: calc(40vh - 180px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Compact document items */
+    .doc-item {
+        padding: 10px 16px;
+    }
+    
+    .doc-name {
+        font-size: 14px;
+    }
+    
+    .doc-folder {
+        font-size: 10px;
+    }
+    
+    .doc-ext {
+        font-size: 10px;
+        padding: 2px 5px;
+    }
+    
+    /* Compact pagination */
+    .pagination {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+    
+    .page-link {
+        font-size: 12px;
+    }
+    
+    .page-info {
+        font-size: 11px;
+    }
+    
+    .content {
+        flex: 1;
+        overflow-y: auto;
+        padding-top: 8px;
     }
     
     .document {
@@ -593,5 +692,49 @@ body {
     .welcome {
         margin: 40px 20px;
         padding: 32px 24px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        max-height: 38vh;
+    }
+    
+    .sidebar-header {
+        padding: 10px 12px;
+    }
+    
+    .sidebar-header h1 {
+        font-size: 1rem;
+    }
+    
+    .search-container {
+        padding: 10px 12px;
+    }
+    
+    .doc-list {
+        max-height: calc(38vh - 160px);
+    }
+    
+    .doc-item {
+        padding: 8px 12px;
+    }
+    
+    .document-title {
+        font-size: 1.5rem;
+    }
+    
+    .document {
+        padding: 20px 16px;
+    }
+    
+    .document-content {
+        font-size: 16px;
+    }
+    
+    .document-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
     }
 }
