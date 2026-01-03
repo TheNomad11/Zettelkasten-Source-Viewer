@@ -301,14 +301,8 @@ body {
     background: var(--bg-secondary);
 }
 
-.document {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 48px;
-    background: var(--bg-main);
-    min-height: 100vh;
-}
 
+/* Document Header - Updated styles for smaller filename */
 .document-header {
     margin-bottom: 40px;
     padding-bottom: 24px;
@@ -316,11 +310,7 @@ body {
 }
 
 .document-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 16px;
-    color: var(--text-primary);
-    line-height: 1.2;
+    display: none;
 }
 
 .document-meta {
@@ -331,10 +321,11 @@ body {
 
 .document-path {
     background: var(--bg-secondary);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    color: var(--text-secondary);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    opacity: 0.6;
 }
 
 .permalink {
@@ -348,116 +339,80 @@ body {
     opacity: 1;
 }
 
-.document-content {
-    font-size: 17px;
-    line-height: 1.8;
-    color: var(--text-primary);
+/* Alternative: If you want it even more subtle */
+/*
+.document-path {
+    background: transparent;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.4;
+    font-weight: 400;
+}
+*/
+
+.document {
+    max-width: 720px;  /* Changed from 900px - optimal ~65-70 chars per line */
+    margin: 0 auto;
+    padding: 48px 64px;  /* More side padding for better margins */
+    background: var(--bg-main);
+    min-height: 100vh;
 }
 
+.document-content {
+    font-size: 18px;  /* Changed from 17px */
+    line-height: 1.7;  /* Slightly tighter from 1.8 for 18px font */
+    color: #0f172a;  /* Darker text for better contrast - was #1e293b */
+    font-feature-settings: "kern" 1, "liga" 1;  /* Enable kerning & ligatures */
+}
+
+/* Better paragraph spacing */
+.document-content p {
+    margin-bottom: 1.4em;  /* Changed from 1.25em - more breathing room */
+}
+
+/* Softer headings to reduce visual fatigue */
 .document-content h1,
 .document-content h2,
-.document-content h3,
-.document-content h4,
-.document-content h5 {
-    margin-top: 2em;
-    margin-bottom: 0.75em;
+.document-content h3 {
+    margin-top: 2.5em;  /* More space before headings */
+    margin-bottom: 0.85em;  /* Slightly more space after */
     font-weight: 600;
-    line-height: 1.3;
-    color: var(--text-primary);
+    line-height: 1.25;  /* Tighter for headings */
+    color: #0f172a;
+    letter-spacing: -0.02em;  /* Slight negative tracking for headings */
 }
 
+/* First heading shouldn't have huge top margin */
 .document-content h1:first-child,
 .document-content h2:first-child,
 .document-content h3:first-child {
     margin-top: 0;
 }
 
-.document-content h1 {
-    font-size: 2rem;
-}
-
-.document-content h2 {
-    font-size: 1.65rem;
-}
-
-.document-content h3 {
-    font-size: 1.35rem;
-}
-
-.document-content h4 {
-    font-size: 1.15rem;
-}
-
-.document-content h5 {
-    font-size: 1rem;
-}
-
-.document-content p {
-    margin-bottom: 1.25em;
-}
-
+/* Lists need more breathing room too */
 .document-content ul,
 .document-content ol {
-    margin: 1em 0;
+    margin: 1.4em 0;  /* Match paragraph spacing */
     padding-left: 2em;
+    line-height: 1.8;  /* Slightly more space in lists */
 }
 
 .document-content li {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.65em;  /* More space between list items */
 }
 
 .document-content a {
-    color: var(--primary);
+    color: #2563eb;  /* Your existing blue */
     text-decoration: none;
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.2s;
+    border-bottom: 1px solid #93c5fd;  /* Visible underline */
+    transition: border-color 0.2s, color 0.2s;
 }
 
 .document-content a:hover {
-    border-bottom-color: var(--primary);
-}
-
-.document-content code {
-    background: var(--bg-secondary);
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    font-size: 0.88em;
-    color: #c7254e;
-}
-
-.document-content pre {
-    background: var(--bg-secondary);
-    padding: 20px;
-    border-radius: 8px;
-    overflow-x: auto;
-    margin: 1.5em 0;
-    border: 1px solid var(--border);
-}
-
-.document-content pre code {
-    background: none;
-    padding: 0;
-    color: var(--text-primary);
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.document-content blockquote {
-    margin: 1.5em 0;
-    padding: 1em 1.5em;
-    border-left: 4px solid var(--primary);
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-}
-
-.document-content img {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin: 2em auto;
-    border-radius: 8px;
-    box-shadow: var(--shadow);
+    color: #1d4ed8;
+    border-bottom-color: #2563eb;  /* Darker on hover */
 }
 
 /* Welcome Screen */
@@ -576,109 +531,10 @@ body {
     
     .sidebar {
         width: 100%;
-        height: auto;
-        max-height: 40vh;
+        height: 50vh;
         border-right: none;
-        border-bottom: none;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        position: relative;
-    }
-    
-    .sidebar::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent 0%, var(--border) 20%, var(--border) 80%, transparent 100%);
-    }
-    
-    /* Compact header on mobile */
-    .sidebar-header {
-        padding: 12px 16px;
-    }
-    
-    .sidebar-header h1 {
-        font-size: 1.125rem;
-        margin-bottom: 2px;
-    }
-    
-    .doc-count {
-        font-size: 11px;
-    }
-    
-    /* Compact search on mobile */
-    .search-container {
-        padding: 12px 16px;
-    }
-    
-    .search-input {
-        padding: 8px 12px;
-        font-size: 14px;
-    }
-    
-    .search-info {
-        padding: 6px 10px;
-        font-size: 12px;
-    }
-    
-    .search-option {
-        font-size: 12px;
-        margin-top: 8px;
-    }
-    
-    /* Hide footer on mobile to save space */
-    .sidebar-footer {
-        display: none;
-    }
-    
-    /* Maximize file list space */
-    .doc-list {
-        max-height: calc(40vh - 180px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Compact document items */
-    .doc-item {
-        padding: 10px 16px;
-    }
-    
-    .doc-name {
-        font-size: 14px;
-    }
-    
-    .doc-folder {
-        font-size: 10px;
-    }
-    
-    .doc-ext {
-        font-size: 10px;
-        padding: 2px 5px;
-    }
-    
-    /* Compact pagination */
-    .pagination {
-        padding: 10px 16px;
-        font-size: 12px;
-    }
-    
-    .page-link {
-        font-size: 12px;
-    }
-    
-    .page-info {
-        font-size: 11px;
-    }
-    
-    .content {
-        flex: 1;
-        overflow-y: auto;
-        padding-top: 8px;
+        border-bottom: 1px solid var(--border);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
     
     .document {
@@ -695,46 +551,466 @@ body {
     }
 }
 
-@media (max-width: 480px) {
-    .sidebar {
-        max-height: 38vh;
+/* Upload Button */
+.upload-button {
+    width: 100%;
+    padding: 12px;
+    margin: 16px 0;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.upload-button:hover {
+    background: var(--primary-hover);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: var(--bg-main);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.modal-close:hover {
+    background: var(--bg-hover);
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+/* Tabs */
+.tab-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.tab-button.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.tab-content {
+    margin-bottom: 20px;
+}
+
+/* Form Elements */
+.modal-body label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 14px;
+}
+
+.modal-body input[type="text"],
+.modal-body input[type="url"],
+.modal-body input[type="password"],
+.modal-body textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: inherit;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+}
+
+.modal-body input:focus,
+.modal-body textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.modal-body textarea {
+    font-family: 'SF Mono', 'Monaco', monospace;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: -12px;
+    margin-bottom: 16px;
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.btn-primary,
+.btn-secondary {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-hover);
+}
+
+/* Upload Status */
+.upload-status {
+    min-height: 24px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.upload-status .success {
+    color: #059669;
+    font-weight: 500;
+}
+
+.upload-status .error {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.upload-status .loading {
+    color: var(--text-muted);
+}
+
+/* Table styles */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+thead {
+    background: var(--bg-secondary);
+}
+
+th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    font-weight: 600;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--border);
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover {
+    background: var(--bg-secondary);
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9em;
     }
     
-    .sidebar-header {
-        padding: 10px 12px;
-    }
-    
-    .sidebar-header h1 {
-        font-size: 1rem;
-    }
-    
-    .search-container {
-        padding: 10px 12px;
-    }
-    
-    .doc-list {
-        max-height: calc(38vh - 160px);
-    }
-    
-    .doc-item {
+    th, td {
         padding: 8px 12px;
     }
-    
-    .document-title {
-        font-size: 1.5rem;
+}
+
+/* Enhanced Table Styles */
+.document-content table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 100%;
+    margin: 1.5em 0;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.95em;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.document-content thead {
+    background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 2px solid var(--border);
+}
+
+.document-content th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-main);
+    border-right: 1px solid var(--border);
+    border-bottom: 2px solid var(--border);
+    white-space: nowrap;
+}
+
+.document-content th:last-child {
+    border-right: none;
+}
+
+.document-content td {
+    padding: 10px 16px;
+    text-align: left;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    vertical-align: top;
+}
+
+.document-content td:last-child {
+    border-right: none;
+}
+
+.document-content tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.document-content tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.document-content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Alternating row colors */
+.document-content tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* First column emphasis (for label columns) */
+.document-content td:first-child {
+    font-weight: 500;
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Numeric cells - right align */
+.document-content td:has(> :only-child:is([0-9])) {
+    text-align: right;
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+    .document-content table {
+        font-size: 0.85em;
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
     }
     
-    .document {
-        padding: 20px 16px;
+    .document-content th,
+    .document-content td {
+        padding: 8px 12px;
     }
-    
-    .document-content {
-        font-size: 16px;
+}
+
+/* Table wrapper for horizontal scroll on mobile */
+.document-content table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.document-content table thead,
+.document-content table tbody,
+.document-content table tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+/* Table Styles for Parsedown output */
+.document-content table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1.5em 0;
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.95em;
+}
+
+.document-content thead {
+    background: #f8f9fa;
+}
+
+.document-content th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-main);
+    border-bottom: 2px solid var(--border);
+    background: #f8f9fa;
+}
+
+.document-content td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+.document-content tbody tr:hover {
+    background: var(--bg-secondary);
+}
+
+.document-content tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Alternating row colors */
+.document-content tbody tr:nth-child(even) {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+/* Responsive tables */
+@media (max-width: 768px) {
+    .document-content table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        font-size: 0.85em;
     }
-    
-    .document-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
+}
+
+/* Code blocks */
+.document-content pre {
+    background: #f6f8fa;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    margin: 1em 0;
+}
+
+.document-content code {
+    background: #f6f8fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 0.9em;
+}
+
+.document-content pre code {
+    background: none;
+    padding: 0;
+}
+
+/* Blockquotes */
+.document-content blockquote {
+    border-left: 4px solid var(--primary);
+    padding-left: 1em;
+    margin: 1em 0;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Horizontal rules */
+.document-content hr {
+    border: none;
+    border-top: 2px solid var(--border);
+    margin: 2em 0;
+}
+
+/* Lists */
+.document-content ul,
+.document-content ol {
+    margin: 1em 0;
+    padding-left: 2em;
+}
+
+.document-content li {
+    margin: 0.5em 0;
 }
