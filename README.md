@@ -1,251 +1,208 @@
-# Zettelkasten Source Viewer
+# Zettelkasten Source Viewer (vibe coded with Claude Sonnet 4.5)
 
-**vibe coded with Claude Sonnet 4.5, use on your own risk**
-
-A minimal, fast, and secure PHP-based document viewer for managing hundreds or thousands of Markdown and HTML source documents. Perfect for Zettelkasten systems that need a simple way to view and link to reference materials.
+A minimal, lightweight document viewer for HTML and Markdown files optimized for hundreds to thousands of documents.
 
 ## Features
 
-### 📚 Core Functionality
-- **Fast document viewing** - Optimized for 1000+ documents
-- **Markdown & HTML support** - View both formats seamlessly
-- **Folder organization** - Recursive subdirectory scanning
-- **Full-text search** - Quick filename search with optional deep content search
-- **Pagination** - Browse large document collections efficiently
-- **Direct linking** - Create permanent links to specific documents
+### Core Functionality
+- **Markdown & HTML Support** - View `.md`, `.html`, and `.htm` files with proper rendering using Parsedown
+- **Smart Caching** - Index rebuilds only when files change, with configurable TTL (1 hour default)
+- **Fast Search** - Filename search by default, optional deep content search
+- **Pagination** - Shows 50 documents per page by default
+- **Lazy Loading** - Content loaded only when viewing documents
 
-### 🚀 Performance
-- **Automatic caching** - JSON index rebuilds only when files change
-- **Lazy loading** - Documents loaded only when viewed
-- **Smart search** - Fast filename search by default, deep search on demand
-- **Index rebuild** - Manual refresh option available
+### Document Management
+- **Upload from URL** - Fetch web articles and convert to Markdown automatically[3]
+- **Paste Content** - Upload Markdown or HTML directly via textarea
+- **Optional Image Download** - Download up to 5 images (max 500KB each) when uploading articles[3]
+- **Automatic Title Extraction** - Sidebar displays first H1 header instead of filenames
+- **Newest First Sorting** - Documents sorted by modification time
 
-### 🔒 Security
-- **Path traversal protection** - Prevents directory traversal attacks
-- **Input validation** - Sanitizes all user inputs
-- **Size limits** - Configurable max file sizes (10MB documents, 5MB images)
-- **Error logging** - Tracks security events and issues
-- **Internal images only** - Images must be in `sources/images/` directory
+### Security
+- **Password Authentication** - Simple session-based login
+- **Path Traversal Protection** - Validates all file paths
+- **Image Sandboxing** - Only serves images from `sources/images/` directory
+- **Input Sanitization** - Validates search queries and file paths
+- **Safe Mode** - Parsedown runs with `setSafeMode(true)`
 
-### 🌍 Internationalization
-- **UTF-8 support** - Full support for international characters
-- **Special characters** - Handles umlauts (ä, ö, ü), accents, apostrophes, etc.
-- **Spaces in filenames** - Works with natural file naming
-
-### 🎨 Features
-- **Clean, modern UI** - Responsive design with dark accents
-- **Auto-linking URLs** - Plain URLs in Markdown automatically become clickable
-- **Image support** - Display images from internal `images/` folder
-- **Folder paths** - Shows document location in sidebar
-- **Document count** - Displays total number of indexed documents
+### Design
+- **Responsive Layout** - Sidebar + content area with mobile support[2]
+- **Optimized Typography** - 680px max-width, 18px font, 1.7 line-height for comfortable reading[2]
+- **Clean UI** - Minimalist design with subtle file metadata[2]
+- **Dark/Light Ready** - CSS custom properties for easy theming[2]
 
 ## Installation
 
-### Requirements
-- PHP 7.4 or higher
-- Web server (Apache, Nginx, etc.)
-- File system permissions for cache directory
-
-### Quick Setup
-
-1. **Clone  the repository or download latest release**
-
-2. **Upload files to your web server**
-```
-/var/www/html/zettelkasten/
-├── index.php
-├── style.css
-├── sources/          # Create this directory
-└── cache/            # Auto-created
-```
-
-3. **Create the sources directory**
+1. **Clone the repository**
 ```bash
-mkdir sources
-mkdir sources/images  # For image support
-chmod 775 sources
-chmod 775 sources/images
+git clone https://github.com/yourusername/zettelkasten-viewer.git
+cd zettelkasten-viewer
 ```
 
-4. **Set proper permissions** (recommended)
+2. **Install Parsedown**
 ```bash
-# Add your user to www-data group
-sudo usermod -a -G www-data yourusername
-
-# Set group ownership
-sudo chgrp -R www-data /path/to/zettelkasten
-
-# Set permissions
-sudo find /path/to/zettelkasten -type d -exec chmod 775 {} \;
-sudo find /path/to/zettelkasten -type f -exec chmod 664 {} \;
-
-# Set SGID bit (new files inherit group)
-sudo find /path/to/zettelkasten -type d -exec chmod g+s {} \;
-
-# Log out and back in for group changes to take effect
+wget https://raw.githubusercontent.com/erusev/parsedown/master/Parsedown.php
 ```
 
-5. **Add your documents**
-- Place `.md`, `.html`, or `.htm` files in the `sources/` directory
-- Organize with subdirectories as needed (e.g., `sources/2024/research/`)
-- Add images to `sources/images/`
+3. **Set up directories**
+```bash
+mkdir -p sources/images cache
+chmod 755 sources cache
+chmod 755 sources/images
+```
 
-6. **Access via browser**
+4. **Configure authentication**
+
+Edit `index.php` and change the default password hash (line ~20):
+```php
+define('AUTH_PASSWORD_HASH', password_hash('your-secure-password', PASSWORD_DEFAULT));
 ```
-https://yoursite.com/zettelkasten/
+
+Generate a new hash:
+```bash
+php -r "echo password_hash('your-secure-password', PASSWORD_DEFAULT);"
 ```
+
+5. **Upload to your web server**
+
+Point your web server to the directory containing `index.php`.
 
 ## Usage
 
 ### Adding Documents
 
-Simply place your Markdown or HTML files in the `sources/` directory:
+**Option 1: Manual Upload**
+- Place `.md` or `.html` files in the `sources/` directory
+- Subdirectories are supported
+- Index rebuilds automatically when files change
 
+**Option 2: Upload via URL**
+- Click "Upload Document" button
+- Enter website URL
+- Choose filename
+- Optionally check "Download images"
+- Click Upload
+
+**Option 3: Paste Content**
+- Click "Upload Document" button
+- Switch to "Paste Content" tab
+- Paste Markdown or HTML
+- Choose filename
+- Click Upload
+
+### Direct Links
+
+Access specific documents directly:
 ```
-sources/
-├── 2024/
-│   ├── research/
-│   │   └── article.md
-│   └── notes.md
-├── 2025/
-│   └── january.md
-└── images/
-    └── diagram.png
+https://yoursite.com/?doc=filename.md
+https://yoursite.com/?doc=folder/document.html
 ```
-
-The app will automatically scan all subdirectories.
-
-### Linking from Your Zettelkasten
-
-Create direct links using the `?doc=` parameter:
-
-```markdown
-[Source Article](https://yoursite.com/zettelkasten/?doc=2024/research/article.md)
-[Quick Note](https://yoursite.com/zettelkasten/?doc=notes.md)
-```
-
-### Using Images
-
-Place images in `sources/images/` and reference them in Markdown:
-
-```markdown
-![Diagram](images/diagram.png)
-![Nested](images/2024/screenshot.jpg)
-```
-
-**Security note:** Only images in the `sources/images/` directory will be displayed. External images are blocked for security.
 
 ### Search
 
-- **Quick search** (default): Searches filenames only - instant results
-- **Deep search**: Check "Search content" to search inside documents - slower but thorough
-
-### Rebuilding Index
-
-Click the "🔄 Rebuild Index" link in the sidebar to manually refresh the document index. The index automatically rebuilds when files are added, modified, or deleted.
+- **Quick search**: Type in search box (searches filenames only)
+- **Deep search**: Check "Search content" for full-text search (slower)
 
 ## Configuration
 
-Edit constants at the top of `index.php`:
+Edit constants in `index.php` (lines 40-50):
 
 ```php
-define('SOURCES_DIR', __DIR__ . '/sources');  // Source documents directory
-define('CACHE_DIR', __DIR__ . '/cache');      // Cache directory
-define('CACHE_TTL', 3600);                     // Cache lifetime (1 hour)
-define('DOCS_PER_PAGE', 50);                   // Documents per page
-define('MAX_SEARCH_LENGTH', 200);              // Max search query length
-define('MAX_FILE_SIZE', 10485760);             // Max document size (10MB)
-define('MAX_IMAGE_SIZE', 5242880);             // Max image size (5MB)
+define('SOURCES_DIR', __DIR__ . '/sources');           // Document directory
+define('CACHE_DIR', __DIR__ . '/cache');               // Cache directory
+define('CACHE_TTL', 3600);                             // Cache time (seconds)
+define('DOCS_PER_PAGE', 50);                           // Pagination limit
+define('MAX_FILE_SIZE', 10485760);                     // Max file size (10MB)
+define('MAX_IMAGE_SIZE', 5242880);                     // Max image size (5MB)
+define('MAX_SEARCH_LENGTH', 200);                      // Max search query
 ```
+
+## Requirements
+
+- PHP 7.4+ (8.0+ recommended)
+- Web server (Apache, Nginx, etc.)
+- Parsedown library (included via download)
+- Write permissions on `cache/` and `sources/images/` directories
 
 ## File Structure
 
 ```
 zettelkasten-viewer/
-├── index.php           # Main application
-├── style.css           # Styles
-├── README.md           # This file
-├── sources/            # Your documents (create this)
-│   ├── images/        # Images directory (optional)
-│   └── *.md, *.html   # Your documents
-├── cache/              # Auto-generated
-│   ├── documents.json # Document index
-│   └── errors.log     # Error log
+├── index.php              # Main viewer application
+├── upload.php             # Upload endpoint
+├── style.css              # Styles
+├── Parsedown.php          # Markdown parser library
+├── sources/               # Your documents
+│   ├── images/           # Local images
+│   └── *.md              # Markdown files
+└── cache/                # Generated cache
+    ├── documents.json    # Document index
+    └── errors.log        # Error log
 ```
 
-## Supported Markdown Features
+## Customization
 
-- **Headers**: `#` through `#####`
-- **Bold**: `**text**` or `__text__`
-- **Italic**: `*text*` or `_text*`
-- **Links**: `[text](url)` 
-- **Auto-links**: Plain URLs like `https://example.com`
-- **Images**: `![alt](images/file.jpg)`
-- **Code**: `` `inline` `` and ` ```blocks``` `
-- **Lists**: `* item`
+### Typography
+
+Edit `.document` and `.document-content` in `style.css`:[2]
+
+```css
+.document {
+    max-width: 680px;      /* Line length */
+}
+
+.document-content {
+    font-size: 18px;       /* Base font size */
+    line-height: 1.7;      /* Line height */
+}
+```
+
+### Color Scheme
+
+Modify CSS custom properties in `:root`:[2]
+
+```css
+:root {
+    --primary: #2563eb;
+    --bg-main: #ffffff;
+    --text-primary: #0f172a;
+}
+```
+
+## Security Notes
+
+- Change default password immediately
+- Run behind HTTPS in production
+- Images are sandboxed to `sources/images/` only
+- All file paths validated against directory traversal
+- Session-based authentication with logout support
 
 ## Troubleshooting
 
-### Documents not loading
-- Check file permissions: `chmod 664 sources/*.md`
-- Check directory permissions: `chmod 775 sources/`
-- View error log: `cache/errors.log`
+**Documents not appearing?**
+- Check file permissions on `sources/` directory
+- Click "Rebuild Index" in sidebar footer
+- Check `cache/errors.log` for issues
 
-### Permission denied errors
-- Ensure web server user can read files
-- Check that cache directory is writable
-- See Installation section for proper permission setup
+**Uploads failing?**
+- Verify write permissions on `sources/` and `sources/images/`
+- Check `cache/errors.log`
+- Ensure PHP `file_get_contents()` can access external URLs
 
-### Index not updating
-- Click "🔄 Rebuild Index" manually
-- Check cache directory permissions
-- Verify `CACHE_TTL` setting
-
-### Images not displaying
-- Ensure images are in `sources/images/` directory
-- Check image file permissions
-- Verify image format is supported (jpg, png, gif, webp, svg)
-- Check browser console for 403/404 errors
-
-## Security
-
-This application implements several security measures:
-
-- **Path traversal protection** - Validates all file paths
-- **Input sanitization** - Cleans all user inputs
-- **Allowed extensions** - Only specified file types are served
-- **Size limits** - Prevents reading of extremely large files
-- **Internal images only** - External images blocked
-- **Error logging** - Security events tracked in `cache/errors.log`
-
-### Best Practices
-
-- Keep the application updated
-- Restrict access with HTTP authentication if needed
-- Regularly review `cache/errors.log`
-- Use HTTPS in production
-- Don't expose error logs publicly
-
-## Performance
-
-Designed to handle large document collections efficiently:
-
-- **100 files**: ~50-100ms load time
-- **500 files**: ~100-200ms load time
-- **1000+ files**: ~150-300ms load time (after initial index)
-
-Initial index build takes 1-2 seconds for 1000 files, then uses cached index.
-
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues or pull requests.
+**Images not displaying?**
+- Images must be in `sources/images/` directory
+- Reference as `![alt](images/filename.jpg)` in markdown
+- External images are blocked for security
 
 ## License
 
-MIT License - feel free to use this for personal or commercial projects.
+MIT License - use freely for personal or commercial projects.
 
 ## Credits
 
-Created for Zettelkasten users who need a simple, fast way to view and link to source documents.
+- **Parsedown** - Markdown parser by Emanuil Rusev
+- Built for personal Zettelkasten and knowledge management workflows
 
+***
+
+/attachments/images/36231608/45f2fe43-0b8d-4282-8491-babd843d3275/screen-2026-01-03-20-28-50.jpg)
