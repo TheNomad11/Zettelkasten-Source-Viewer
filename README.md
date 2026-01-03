@@ -12,9 +12,9 @@ A minimal, lightweight document viewer for HTML and Markdown files optimized for
 - **Lazy Loading** - Content loaded only when viewing documents
 
 ### Document Management
-- **Upload from URL** - Fetch web articles and convert to Markdown automatically[3]
+- **Upload from URL** - Fetch web articles and convert to Markdown automatically
 - **Paste Content** - Upload Markdown or HTML directly via textarea
-- **Optional Image Download** - Download up to 5 images (max 500KB each) when uploading articles[3]
+- **Optional Image Download** - Download up to 5 images (max 500KB each) when uploading articles
 - **Automatic Title Extraction** - Sidebar displays first H1 header instead of filenames
 - **Newest First Sorting** - Documents sorted by modification time
 
@@ -26,10 +26,10 @@ A minimal, lightweight document viewer for HTML and Markdown files optimized for
 - **Safe Mode** - Parsedown runs with `setSafeMode(true)`
 
 ### Design
-- **Responsive Layout** - Sidebar + content area with mobile support[2]
-- **Optimized Typography** - 680px max-width, 18px font, 1.7 line-height for comfortable reading[2]
-- **Clean UI** - Minimalist design with subtle file metadata[2]
-- **Dark/Light Ready** - CSS custom properties for easy theming[2]
+- **Responsive Layout** - Sidebar + content area with mobile support
+- **Optimized Typography** - 680px max-width, 18px font, 1.7 line-height for comfortable reading
+- **Clean UI** - Minimalist design with subtle file metadata
+- **Dark/Light Ready** - CSS custom properties for easy theming
 
 ## Installation
 
@@ -144,7 +144,7 @@ zettelkasten-viewer/
 
 ### Typography
 
-Edit `.document` and `.document-content` in `style.css`:[2]
+Edit `.document` and `.document-content` in `style.css`:
 
 ```css
 .document {
@@ -159,7 +159,7 @@ Edit `.document` and `.document-content` in `style.css`:[2]
 
 ### Color Scheme
 
-Modify CSS custom properties in `:root`:[2]
+Modify CSS custom properties in `:root`:
 
 ```css
 :root {
@@ -203,6 +203,3 @@ MIT License - use freely for personal or commercial projects.
 - **Parsedown** - Markdown parser by Emanuil Rusev
 - Built for personal Zettelkasten and knowledge management workflows
 
-***
-
-/attachments/images/36231608/45f2fe43-0b8d-4282-8491-babd843d3275/screen-2026-01-03-20-28-50.jpg)
