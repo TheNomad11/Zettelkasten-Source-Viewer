@@ -4,9 +4,141 @@
  * A minimal document viewer for HTML and Markdown files
  * Optimized for hundreds/thousands of documents
  * 
- * @version 2.0
+ * @version 3.0
  * @author Zettelkasten Source Viewer
  */
+ 
+/**
+ * Simple Authentication
+ * Add this at the TOP of index.php, before any other code
+ */
+
+// Start session
+session_start();
+
+// Configuration - CHANGE THIS PASSWORD!
+define('AUTH_PASSWORD_HASH', password_hash('your-secure-password', PASSWORD_DEFAULT));
+
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
+// Handle login
+if (isset($_POST['login_password'])) {
+    if (password_verify($_POST['login_password'], AUTH_PASSWORD_HASH)) {
+        $_SESSION['authenticated'] = true;
+        header('Location: index.php');
+        exit;
+    } else {
+        $login_error = 'Invalid password';
+    }
+}
+
+// Check authentication
+if (!isset($_SESSION['authenticated']) || $_SESSION['authenticated'] !== true) {
+    // Show login page
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Login - Zettelkasten Sources</title>
+        <link rel="stylesheet" href="style.css">
+        <style>
+            .login-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: var(--bg-secondary);
+            }
+            .login-box {
+                background: var(--bg-main);
+                padding: 40px;
+                border-radius: 12px;
+                box-shadow: var(--shadow-lg);
+                width: 100%;
+                max-width: 400px;
+            }
+            .login-box h1 {
+                margin-bottom: 8px;
+                font-size: 1.8rem;
+            }
+            .login-box p {
+                color: var(--text-secondary);
+                margin-bottom: 24px;
+            }
+            .login-form input[type="password"] {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+            .login-form input[type="password"]:focus {
+                outline: none;
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            }
+            .login-form button {
+                width: 100%;
+                padding: 12px;
+                background: var(--primary);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .login-form button:hover {
+                background: var(--primary-hover);
+            }
+            .login-error {
+                background: #fee;
+                color: #c33;
+                padding: 12px;
+                border-radius: 6px;
+                margin-bottom: 16px;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-box">
+                <h1>🔒 Login</h1>
+                <p>Enter password to access your documents</p>
+                
+                <?php if (isset($login_error)): ?>
+                    <div class="login-error"><?php echo htmlspecialchars($login_error); ?></div>
+                <?php endif; ?>
+                
+                <form method="post" class="login-form">
+                    <input 
+                        type="password" 
+                        name="login_password" 
+                        placeholder="Password" 
+                        required 
+                        autofocus
+                    >
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+} 
+ 
+ 
 
 // Configuration
 define('SOURCES_DIR', __DIR__ . '/sources');
@@ -147,87 +279,83 @@ function checkDirectoryAccess($dir, $needsWrite = false) {
     return true;
 }
 
+
 /**
- * Simple Markdown to HTML parser
- * 
+ * Parse Markdown to HTML using Parsedown library
+ * Falls back to basic parsing if Parsedown not available
  * @param string $text Markdown text
  * @return string HTML output
  */
 function parseMarkdown($text) {
-    // Escape HTML first to prevent XSS
+    // Try to use Parsedown if available
+    if (file_exists(__DIR__ . '/Parsedown.php')) {
+        require_once __DIR__ . '/Parsedown.php';
+        
+        $Parsedown = new Parsedown();
+        $Parsedown->setSafeMode(true); // Escapes HTML for security
+        
+        // Process images to only allow internal ones
+        $html = $Parsedown->text($text);
+        
+        // Post-process to secure images - only allow images from images/ folder
+        $html = preg_replace_callback('/<img[^>]*src=["\']([^"\']+)["\'][^>]*>/i', function($matches) {
+            $fullTag = $matches[0];
+            $src = $matches[1];
+            
+            // Only allow images from images subfolder
+            if (strpos($src, 'images/') === 0) {
+                $safeSrc = validatePath($src);
+                if ($safeSrc) {
+                    // Rebuild image tag with validated path
+                    preg_match('/alt=["\']([^"\']*)["\']/', $fullTag, $altMatch);
+                    $alt = isset($altMatch[1]) ? $altMatch[1] : '';
+                    return '<img src="?img=' . urlencode($safeSrc) . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '">';
+                }
+            }
+            // Remove external/invalid images
+            return '';
+        }, $html);
+        
+        return $html;
+    }
+    
+    // Fallback to basic parsing if Parsedown not available
+    return parseMarkdownBasic($text);
+}
+
+/**
+ * Basic fallback markdown parser
+ * @param string $text Markdown text
+ * @return string HTML output
+ */
+function parseMarkdownBasic($text) {
     $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
     
-    // Code blocks (before other processing)
-    $text = preg_replace_callback('/```(.*?)```/s', function($matches) {
-        return '<pre><code>' . trim($matches[1]) . '</code></pre>';
-    }, $text);
-    
-    // Images - convert ![alt](src) to <img> tags (only for internal images)
-    $text = preg_replace_callback('/!\[([^\]]*)\]\(([^\)]+)\)/', function($matches) {
-        $alt = $matches[1];
-        $src = htmlspecialchars_decode($matches[2]);
-        
-        // Only allow images from images/ subfolder
-        if (strpos($src, 'images/') === 0) {
-            $safeSrc = validatePath($src);
-            if ($safeSrc) {
-                return '<img src="?img=' . urlencode($safeSrc) . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '" />';
-            }
-        }
-        
-        // If not internal image, remove it (security)
-        return '';
-    }, $text);
-    
-    // Headers (must be at start of line)
-    $text = preg_replace('/^##### (.*?)$/m', '<h5>$1</h5>', $text);
-    $text = preg_replace('/^#### (.*?)$/m', '<h4>$1</h4>', $text);
-    $text = preg_replace('/^### (.*?)$/m', '<h3>$1</h3>', $text);
-    $text = preg_replace('/^## (.*?)$/m', '<h2>$1</h2>', $text);
-    $text = preg_replace('/^# (.*?)$/m', '<h1>$1</h1>', $text);
-    
-    // Unordered lists
-    $text = preg_replace('/^\* (.+)$/m', '<li>$1</li>', $text);
-    $text = preg_replace('/(<li>.*<\/li>)/s', '<ul>$1</ul>', $text);
-    
-    // Links - convert [text](url) to <a> tags
-    $text = preg_replace_callback('/\[([^\]]+)\]\(([^\)]+)\)/', function($matches) {
-        $linkText = $matches[1];
-        $href = htmlspecialchars_decode($matches[2]);
-        return '<a href="' . htmlspecialchars($href, ENT_QUOTES, 'UTF-8') . '">' . $linkText . '</a>';
-    }, $text);
-    
-    // Plain URLs - convert standalone URLs to clickable links
-    $text = preg_replace_callback('/(?<!["\'>])\b(https?:\/\/[^\s<]+)/', function($matches) {
-        $url = $matches[1];
-        return '<a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '</a>';
-    }, $text);
+    // Headers
+    $text = preg_replace('/^##### (.+)$/m', '<h5>$1</h5>', $text);
+    $text = preg_replace('/^#### (.+)$/m', '<h4>$1</h4>', $text);
+    $text = preg_replace('/^### (.+)$/m', '<h3>$1</h3>', $text);
+    $text = preg_replace('/^## (.+)$/m', '<h2>$1</h2>', $text);
+    $text = preg_replace('/^# (.+)$/m', '<h1>$1</h1>', $text);
     
     // Bold and italic
-    $text = preg_replace('/\*\*\*(.+?)\*\*\*/s', '<strong><em>$1</em></strong>', $text);
     $text = preg_replace('/\*\*(.+?)\*\*/s', '<strong>$1</strong>', $text);
     $text = preg_replace('/\*(.+?)\*/s', '<em>$1</em>', $text);
-    $text = preg_replace('/___(.+?)___/s', '<strong><em>$1</em></strong>', $text);
-    $text = preg_replace('/__(.+?)__/s', '<strong>$1</strong>', $text);
-    $text = preg_replace('/_(.+?)_/s', '<em>$1</em>', $text);
     
-    // Inline code
-    $text = preg_replace('/`([^`]+)`/', '<code>$1</code>', $text);
+    // Links
+    $text = preg_replace('/\[([^\]]+)\]\(([^\)]+)\)/', '<a href="$2">$1</a>', $text);
+    
+    // Code
+    $text = preg_replace('/`(.+?)`/', '<code>$1</code>', $text);
     
     // Paragraphs
-    $text = preg_replace('/\n\n+/', '</p><p>', $text);
+    $text = preg_replace('/\n\n/', '</p><p>', $text);
     $text = '<p>' . $text . '</p>';
-    $text = preg_replace('/\n/', '<br>', $text);
-    
-    // Clean up empty paragraphs
-    $text = preg_replace('/<p><\/p>/', '', $text);
-    $text = preg_replace('/<p>(<h[1-6]>.*?<\/h[1-6]>)<\/p>/', '$1', $text);
-    $text = preg_replace('/<p>(<pre>.*?<\/pre>)<\/p>/s', '$1', $text);
-    $text = preg_replace('/<p>(<ul>.*?<\/ul>)<\/p>/s', '$1', $text);
-    $text = preg_replace('/<p>(<img[^>]*>)<\/p>/', '$1', $text);
     
     return $text;
 }
+
+
 
 /**
  * Get directory modification time (recursive)
@@ -308,7 +436,8 @@ function buildIndex() {
         logError("Cache directory not accessible, using in-memory index", 'WARNING');
         return scanDocumentsRecursive(SOURCES_DIR);
     }
-    
+
+
     $documents = scanDocumentsRecursive(SOURCES_DIR);
     
     // Save to JSON file
@@ -361,6 +490,46 @@ function loadDocuments() {
     
     return $documents;
 }
+
+
+
+
+function extractTitle($path, $fallback) {
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    
+    if (!in_array($ext, ['md', 'html', 'htm'])) {
+        return $fallback;
+    }
+    
+    // Read only first 2KB - titles are at the top
+    $handle = @fopen($path, 'r');
+    if (!$handle) return $fallback;
+    
+    $content = fread($handle, 2048);
+    fclose($handle);
+    
+    if ($ext === 'md') {
+        // Extract first markdown header: # Title
+        if (preg_match('/^#\s+(.+)$/m', $content, $matches)) {
+            return trim($matches[1]);
+        }
+    } else {
+        // HTML: try <title> first, then <h1>
+        if (preg_match('/<title>(.+?)<\/title>/is', $content, $matches)) {
+            return trim(html_entity_decode(strip_tags($matches[1]), ENT_QUOTES, 'UTF-8'));
+        }
+        if (preg_match('/<h1[^>]*>(.+?)<\/h1>/is', $content, $matches)) {
+            return trim(html_entity_decode(strip_tags($matches[1]), ENT_QUOTES, 'UTF-8'));
+        }
+    }
+    
+    return $fallback;
+}
+
+
+
+
+
 
 /**
  * Recursively scan directory for allowed documents
@@ -422,6 +591,7 @@ function scanDocumentsRecursive($dir, $baseDir = null) {
                 $relativePath = substr($path, strlen($baseDir) + 1);
                 $documents[] = [
                     'name' => pathinfo($item, PATHINFO_FILENAME),
+                    'title' => extractTitle($path, pathinfo($item, PATHINFO_FILENAME)),  // ADD THIS LINE
                     'path' => $relativePath,
                     'ext' => $ext,
                     'size' => $fileSize,
@@ -431,9 +601,9 @@ function scanDocumentsRecursive($dir, $baseDir = null) {
         }
     }
     
-    usort($documents, function($a, $b) {
-        return strcasecmp($a['name'], $b['name']);
-    });
+   usort($documents, function($a, $b) {
+    return $b['modified'] - $a['modified'];  // Newest first
+});
     
     return $documents;
 }
@@ -805,7 +975,132 @@ if (!empty($viewDoc)) {
             <div class="sidebar-header">
                 <h1>📚 Sources</h1>
                 <div class="doc-count"><?php echo count($documents); ?> documents</div>
+
+   </div>
+            
+ <!-- Upload Button -->
+<button onclick="showUploadModal()" class="upload-button">
+    ⬆️ Upload Document
+</button>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Upload Document</h2>
+            <button onclick="hideUploadModal()" class="modal-close">✕</button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="tab-buttons">
+                <button onclick="switchTab('url')" id="tab-url" class="tab-button active">From URL</button>
+                <button onclick="switchTab('content')" id="tab-content" class="tab-button">Paste Content</button>
             </div>
+            
+            <form id="uploadForm" onsubmit="handleUpload(event)">
+                <div id="url-tab" class="tab-content">
+                    <label for="url">Website URL:</label>
+                    <input type="url" id="url" placeholder="https://example.com/article">
+                    <p class="help-text">The page will be fetched and converted to Markdown</p>
+                </div>
+                
+                <div id="content-tab" class="tab-content" style="display: none;">
+                    <label for="content">Content (Markdown or HTML):</label>
+                    <textarea id="content" rows="10" placeholder="Paste your content here..."></textarea>
+                </div>
+                
+                <label for="filename">Filename:</label>
+                <input type="text" id="filename" placeholder="my-document" required>
+                <p class="help-text">Without extension (will auto-add .md)</p>
+                
+                
+                <div id="uploadStatus" class="upload-status"></div>
+                
+                <div class="modal-actions">
+                    <button type="button" onclick="hideUploadModal()" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentTab = 'url';
+
+function showUploadModal() {
+    document.getElementById('uploadModal').style.display = 'flex';
+}
+
+function hideUploadModal() {
+    document.getElementById('uploadModal').style.display = 'none';
+    document.getElementById('uploadForm').reset();
+    document.getElementById('uploadStatus').innerHTML = '';
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById('tab-url').classList.toggle('active', tab === 'url');
+    document.getElementById('tab-content').classList.toggle('active', tab === 'content');
+    document.getElementById('url-tab').style.display = tab === 'url' ? 'block' : 'none';
+    document.getElementById('content-tab').style.display = tab === 'content' ? 'block' : 'none';
+}
+
+async function handleUpload(e) {
+    e.preventDefault();
+    
+    const status = document.getElementById('uploadStatus');
+    const formData = new FormData();
+    const filename = document.getElementById('filename').value;
+    
+    // ✅ ADD THIS LINE - Send filename to server
+    formData.append('filename', filename);
+    formData.append('mode', currentTab);
+    
+    if (currentTab === 'url') {
+        const url = document.getElementById('url').value;
+        if (!url) {
+            status.innerHTML = '<span class="error">Please enter a URL</span>';
+            return;
+        }
+        formData.append('url', url);
+    } else {
+        const content = document.getElementById('content').value;
+        if (!content) {
+            status.innerHTML = '<span class="error">Please enter content</span>';
+            return;
+        }
+        formData.append('content', content);
+    }
+    
+    status.innerHTML = '<span class="loading">Uploading...</span>';
+    
+    try {
+        const response = await fetch('upload.php', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.success) {
+            status.innerHTML = '<span class="success">Upload successful!</span>';
+            setTimeout(() => {
+                window.location.href = result.url;
+            }, 1000);
+        } else {
+            status.innerHTML = '<span class="error">Error: ' + result.error + '</span>';
+        }
+    } catch (error) {
+        status.innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+    }
+}
+
+</script>      
+
+            
+            
+            
             
             <div class="search-container">
                 <form method="get" class="search-form" action="">
@@ -861,7 +1156,8 @@ if (!empty($viewDoc)) {
                             class="doc-item <?php echo $viewDoc === $document['path'] ? 'active' : ''; ?>"
                         >
                             <div class="doc-info">
-                                <span class="doc-name"><?php echo htmlspecialchars($document['name']); ?></span>
+                                <span class="doc-name"><?php echo htmlspecialchars($document['title'] ?? $document['name']) ?></span>
+
                                 <?php if (!empty($folderPath)): ?>
                                     <span class="doc-folder"><?php echo htmlspecialchars($folderPath); ?></span>
                                 <?php endif; ?>
@@ -900,6 +1196,7 @@ if (!empty($viewDoc)) {
                 <div class="footer-label">Direct link format:</div>
                 <code>?doc=path/to/file.md</code>
                 <a href="?rebuild=1" class="rebuild-link" title="Rebuild document index">🔄 Rebuild Index</a>
+                    <a href="?logout=1" class="rebuild-link">🚪 Logout</a>
             </div>
         </aside>
         
