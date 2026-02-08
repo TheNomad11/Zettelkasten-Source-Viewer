@@ -497,7 +497,10 @@ function extractTitle($path, $fallback) {
     if ($ext === 'md') {
         // Extract first markdown header: # Title
         if (preg_match('/^#\s+(.+)$/m', $content, $matches)) {
-            return trim($matches[1]);
+            $title = trim($matches[1]);
+            // Extract link text from Markdown links [text](url)
+            $title = preg_replace('/\[([^\]]+)\]\([^)]*\)/', '$1', $title);
+            return trim($title);
         }
     } else {
         // HTML: try <title> first, then <h1>
@@ -511,7 +514,6 @@ function extractTitle($path, $fallback) {
 
     return $fallback;
 }
-
 /**
  * Recursively scan directory for allowed documents
  *
