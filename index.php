@@ -17,7 +17,7 @@
 session_start();
 
 // Configuration - CHANGE THIS PASSWORD!
-define('AUTH_PASSWORD_HASH', password_hash('your-secure-password', PASSWORD_DEFAULT));
+define('AUTH_PASSWORD_HASH', password_hash('your-password', PASSWORD_DEFAULT));
 
 // Handle logout
 if (isset($_GET['logout'])) {
@@ -971,11 +971,21 @@ if (!empty($viewDoc)) {
     <?php endif; ?>
     
     <div class="container">
-        <aside class="sidebar">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h1>📚 Sources</h1>
-                <div class="doc-count"><?php echo count($documents); ?> documents</div>
-
+                <div class="sidebar-title-row">
+                    <div>
+                        <h1>📚 Sources</h1>
+                        <div class="doc-count"><?php echo count($documents); ?> documents</div>
+                    </div>
+                    <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
    </div>
             
  <!-- Upload Button -->
@@ -1096,6 +1106,42 @@ async function handleUpload(e) {
     }
 }
 
+// Toggle sidebar on mobile
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    sidebar.classList.toggle('active');
+    if (overlay) {
+        overlay.classList.toggle('active');
+    }
+}
+
+// Close sidebar when clicking on overlay
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        });
+    }
+    
+    // Close sidebar when clicking on a document link on mobile
+    const docLinks = document.querySelectorAll('.doc-item');
+    docLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    sidebar.classList.remove('active');
+                    if (overlay) overlay.classList.remove('active');
+                }, 100);
+            }
+        });
+    });
+});
+
 </script>      
 
             
@@ -1201,6 +1247,12 @@ async function handleUpload(e) {
         </aside>
         
         <main class="content">
+            <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
             <?php if ($doc): ?>
                 <article class="document">
                     <header class="document-header">
