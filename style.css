@@ -1242,6 +1242,43 @@ tr:hover {
     }
 }
 
+/* Add this to your style.css file */
+
+/* Search Button Styles */
+.search-button {
+    display: none;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-button:hover {
+    background: var(--primary-hover);
+}
+
+/* Show search button on mobile */
+@media (max-width: 768px) {
+    .search-button {
+        display: block;
+    }
+
+    /* Adjust search input to make room for button */
+    .search-input {
+        padding-right: 50px;
+    }
+}
+
+
+
 /* Small phones */
 @media (max-width: 480px) {
     .mobile-menu-btn {
@@ -1274,4 +1311,7 @@ tr:hover {
     .document-content h3 {
         font-size: 1.2rem;
     }
+
+
+
 }
